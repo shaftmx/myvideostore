@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 from myvideostore.tools import Print
+
+# Init logging level with debug stream handler
+logging.getLogger().setLevel(logging.CRITICAL)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
 
 # TODO
 #  * Prendre en arg un dossier src et un dst

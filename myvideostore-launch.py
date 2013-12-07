@@ -2,7 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import curses
+import logging
 from myvideostore.tools import Print
+
+
+# Init logging level with debug stream handler
+logging.getLogger().setLevel(logging.CRITICAL)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
+
 
 Print.red('bla')
 
@@ -79,28 +87,34 @@ def getkey(final, title, menu, window, active_pos = 1):
 
 
 if __name__ == "__main__":
-  try:
-    # Initialisation de curses
-    stdscr = init_curses()
-
-    # Initialisation des couleurs
-    init_colors()
-
-    # Création de la sous-fenêtre
-    window = stdscr.subwin(40, 79, 3, 5)
-    window.border(0)
-
-    menu_list = ("Choix 1", "Choix 2", "Choix 3", "Quitter")
-    title = "Petit test de menu"
-    display_menu(title, menu_list, window)
-
-    choice = getkey(len(menu_list), title, menu_list, window)
-    window.addstr(len(menu_list) + 5, 1,
-        "Choix de l'utilisateur : %s (%d)" % (menu_list[choice-1], choice))
-    window.addstr(len(menu_list) + 6, 1, "Appuyez sur une touche pour sortir")
-    window.refresh()
-    c = window.getch()
-  finally:
-    #Fermeture de curses
-    close_curses(stdscr)
-
+    from myvideostore.db import Db
+    with Db(db_file='/tmp/db.json') as db:
+        db.save('key', 'value')
+        print db.get('key')
+        print db.get_all()
+        
+#  try:
+#    # Initialisation de curses
+#    stdscr = init_curses()
+#
+#    # Initialisation des couleurs
+#    init_colors()
+#
+#    # Création de la sous-fenêtre
+#    window = stdscr.subwin(40, 79, 3, 5)
+#    window.border(0)
+#
+#    menu_list = ("Choix 1", "Choix 2", "Choix 3", "Quitter")
+#    title = "Petit test de menu"
+#    display_menu(title, menu_list, window)
+#
+#    choice = getkey(len(menu_list), title, menu_list, window)
+#    window.addstr(len(menu_list) + 5, 1,
+#        "Choix de l'utilisateur : %s (%d)" % (menu_list[choice-1], choice))
+#    window.addstr(len(menu_list) + 6, 1, "Appuyez sur une touche pour sortir")
+#    window.refresh()
+#    c = window.getch()
+#  finally:
+#    #Fermeture de curses
+#    close_curses(stdscr)
+#
