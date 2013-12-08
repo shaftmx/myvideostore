@@ -3,6 +3,7 @@
 
 import logging
 from myvideostore.tools import Print
+import argparse
 
 # Init logging level with debug stream handler
 logging.getLogger().setLevel(logging.CRITICAL)

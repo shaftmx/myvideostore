@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import curses
 import logging
+import argparse
 from myvideostore.tools import Print
+from myvideostore.db import Db
 
 
 # Init logging level with debug stream handler
@@ -87,12 +90,30 @@ def getkey(final, title, menu, window, active_pos = 1):
 
 
 if __name__ == "__main__":
-    from myvideostore.db import Db
-    with Db(db_file='/tmp/db.json') as db:
-        db.save('key', 'value')
-        print db.get('key')
-        print db.get_all()
-        
+
+## FILE
+    dir_path = 'Videos'
+    for filename in os.listdir(dir_path):
+        if os.path.isdir('%s/%s' % (dir_path, filename)):
+            print 'Dir : %s' % filename
+        if os.path.isfile('%s/%s' % (dir_path, filename)):
+            print 'file : %s' % filename
+
+# WALK
+    #import hashlib
+    #for dirnpath, dirnames, filenames in os.walk('Videos'):
+        #print dirnpath, filenames
+        #if not filenames: continue
+        #print [(fname, hashlib.md5(open('%s/%s' % (dirnpath, fname), 'rb').read()).digest()) for fname in filenames]
+# Copy with progress http://stackoverflow.com/questions/274493/how-to-copy-a-file-in-python-with-a-progress-bar
+
+# DATABASE
+#    with Db(db_file='/tmp/db.json') as db:
+#        db.save('key', 'value')
+#        print db.get('key')
+#        print db.get_all()
+
+# CURSES
 #  try:
 #    # Initialisation de curses
 #    stdscr = init_curses()

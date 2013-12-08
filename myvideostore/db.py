@@ -4,6 +4,8 @@
 import json
 import logging
 
+# TODO delete dict behavior. List is enough
+
 class Db(object):
     "Manage simple database in json file"
 
@@ -60,8 +62,8 @@ class Db(object):
 
 ## La db va contenir le path et un hash du fihier et status (copied
 #{
-#    '1234' : '/bla',
-#    '1234' : '/foo',
+#    '/bla' : 'unused',
+#    '/foo' : 'unused',
 #}
 #
 ## La db va contenir le status (vue ou non) et les nouvelles videos
