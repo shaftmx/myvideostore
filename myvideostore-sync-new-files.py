@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import logging
 from myvideostore.tools import Print
+from myvideostore.tools import create_dir, remove_empty_dir
 import argparse
 import os
 
@@ -47,49 +47,7 @@ formatter = logging.Formatter(logformat)
 hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 
 
-def create_dir(path):
-    if DRY_RUN:
-        LOG.warning('Create directory : %s' % path)
-    else:
-        if not os.path.isdir(path):
-            LOG.info('Create directory : %s' % path)
-            os.makedirs(path)
-    
-create_dir('bla')
+# Clean empty dir after sync
+remove_empty_dir(ARGS.target, dry_run=DRY_RUN)
 
-
-
-def remove_empty_dir(path):
-    # Set dry-run hack
-    deleted_dir = []
-    # Run while dir are remove
-    all_cleaned = False
-    while not all_cleaned:
-        all_cleaned = True
-        for root, dirs, files in os.walk(path,topdown=False):
-            for name in dirs:
-                fname = os.path.join(root,name)
-                # Check if dir is empty or in case of dryrun if the dir is not
-                # marked deleted
-                if not os.listdir(fname) and (fname not in deleted_dir):
-                    if DRY_RUN:
-                        deleted_dir.append(fname)
-                    else:
-                        #os.removedirs(fname)
-                        pass
-                    LOG.info('Delete empty directory : %s' % fname)
-                    all_cleaned = False
-                elif DRY_RUN and os.listdir(fname):
-                    # Check if dir content are only file or dir marked in deleted_dir
-                    # In case of all dir or file are marked, the dir will be deleted (empty)
-                    dir_content = os.listdir(fname)
-                    for content_name in dir_content:
-                        if os.path.join(fname, content_name) in deleted_dir:
-                            dir_content.remove(content_name)
-                    if not dir_content and not fname in deleted_dir:
-                        deleted_dir.append(fname)
-                        LOG.info('Delete empty directory : %s' % fname)
-    print deleted_dir
-
-remove_empty_dir('Videos')
-# Excepted -> empty, empty2/empty_sub, empty2
+create_dir(ARGS.target, dry_run=DRY_RUN)
