@@ -9,9 +9,10 @@ import logging
 class Db(object):
     "Manage simple database in json file"
 
-    def __init__(self, db_type='default', db_file='./%s.json' % __name__, logger=__name__):
+    def __init__(self, db_type='default', dry_run=False, db_file='./%s.json' % __name__, logger=__name__):
         self._db_file = db_file
         self._db_type = db_type
+        self._dry_run = dry_run
         self._db = {db_type: {}}
         self._logger = logging.getLogger(logger)
 
@@ -20,7 +21,8 @@ class Db(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        self._dump_db()
+        if not self._dry_run:
+            self._dump_db()
 
     def _load_db(self):
         "Load the database from file"
@@ -43,6 +45,10 @@ class Db(object):
     def save(self, key, value):
         "Write data in the database"
         self._db[self._db_type][key] = value
+
+    def flush_all(self):
+        "Flush all datas in the database"
+        self._db[self._db_type] = {}
 
     def get(self, key):
         "Get data from database"
