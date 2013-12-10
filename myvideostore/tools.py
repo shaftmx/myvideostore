@@ -3,6 +3,8 @@
 
 import logging
 import os
+from shutil import copy2 as copy
+from os.path import join
 
 LOG = logging.getLogger(__name__)
 
@@ -43,6 +45,12 @@ class Print(object):
     def cyan(texte):
         print "\033[36m%s\033[0m" % texte
 
+def copy_file(source, dest, dry_run=False):
+    if dry_run:
+        LOG.warning('Copy file : %s' % dest)
+    else:
+        LOG.info('Copy file : %s' % dest)
+        copy(source, dest)
 
 def create_dir(path, dry_run=False):
     if dry_run:

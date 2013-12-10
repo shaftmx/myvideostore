@@ -3,19 +3,24 @@
 import logging
 from myvideostore.tools import Print
 from myvideostore.db import Db
-from myvideostore.tools import create_dir, remove_empty_dir
+from myvideostore.tools import create_dir, copy_file, remove_empty_dir
 import argparse
+from os.path import join
 import os
 import re
 
 
 # TODO
 #X  * Prendre en arg un dossier src et un dst
-#  * Faire un fichier db à la racine de ce dossier dst
-#  * La db va contenir le path et un hash du fihier et status (copied)
+#X  * Faire un fichier db à la racine de ce dossier dst
+#X  * La db va contenir le path et un hash du fihier et status (copied)
 #  * Possible d'ajouter des excludes pour les dossiers.
-#  * copier les nouveaux fichiers et reconstruire l'arbo
-#  * Apres passage du sync clean des dossiers vides
+#     * Idee mettre ca dans un db_type exclude. Ajouter des arg au script pour exclude-add -list -del
+#     * Del attendra un ID donné par liste. DB : excludename -> id
+#     * Copy se fait uniquement si le relative_file ne match pas un exclude
+#     * Si c'est une opération sur un exclude ne pas copier les fichiers
+#X  * copier les nouveaux fichiers et reconstruire l'arbo
+#X  * Apres passage du sync clean des dossiers vides
 #  * + Ajouter la liste des nouvelles videos dans la db du videostore
 
 
@@ -30,6 +35,20 @@ PARSER.add_argument("-d", "--dry-run",
             help="Launch script in dry run mode",
             action='store_true',
             default=False)
+PARSER.add_argument("-l", "--list-exclude",
+            help="List all excludes with ID. (Don't copy any file)",
+            action='store_true',
+            default=False)
+PARSER.add_argument("-a", "--add-exclude",
+            help="Add exclude in exclude list (Don't copy any file)",
+            metavar='exclude',
+            type=str,
+            nargs='+')
+PARSER.add_argument("-x", "--del-exclude",
+            help="Delete all exclude specified (Don't copy any file)",
+            metavar='exclude_id',
+            type=int,
+            nargs='+')
 PARSER.add_argument("-s", "--source",
             help="Source directory to get videos",
             type=str,
@@ -56,26 +75,28 @@ with Db(db_type='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as 
     # For each files
     for dir_path, dirs, files in os.walk(ARGS.source):
         if not files: continue
+        # For each files in dir
         for file_name in files:
-            file_path = os.path.join(dir_path, file_name)
-            if db.get(file_path) is None:
-                LOG.warning('Copy file %s' % file_path)
-                # TODO factorize get source dest -> make dest dir add filename at copy
-                file_source = os.path.join(dir_path, file_name)
-                # Dest is same path without root dir
-                dir_dst = os.path.join(ARGS.target,
-                                       re.sub(r'%s/?' % ARGS.source,'',dir_path))
-                print '%s -> %s' % (file_source, dir_dst)
-                dir_dst = os.path.join(ARGS.target,dir_path)
-                create_dir(dir_dst, dry_run=DRY_RUN)
+            # Exemple : -s Video/foo -t dest
+            # Give : src = Video/foo : relative = foo : dst = dest/foo
+            dir_source      = dir_path
+            dir_relative    = re.sub(r'%s/?' % ARGS.source,'', dir_source)
+            dir_dest        = join(ARGS.target, dir_relative)
+            file_source     = join(dir_source, file_name)
+            file_relative   = join(dir_relative, file_name)
+            file_dest       = join(dir_dest, file_name)
 
-                db.save(file_path, 'unused')
+            if db.get(file_relative) is None:
+                create_dir(dir_dest, dry_run=DRY_RUN)
+                copy_file(file_source, file_dest, dry_run=DRY_RUN)
+
+                db.save(file_relative, 'unused')
 
         #print [(fname, hashlib.md5(open('%s/%s' % (dirnpath, fname), 'rb').read()).digest()) for fname in filenames]
 
     print db.get('key')
     print db.get_all()
-    db.flush_all()
+    #db.flush_all()
 
 
 
