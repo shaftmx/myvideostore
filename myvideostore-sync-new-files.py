@@ -68,42 +68,50 @@ formatter = logging.Formatter(logformat)
 hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 
 
-# Launch database connection
-with Db(db_type='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
-    # Create target dir
-    create_dir(ARGS.target, dry_run=DRY_RUN)
-    # For each files
-    for dir_path, dirs, files in os.walk(ARGS.source):
-        if not files: continue
-        # For each files in dir
-        for file_name in files:
-            # Exemple : -s Video/foo -t dest
-            # Give : src = Video/foo : relative = foo : dst = dest/foo
-            dir_source      = dir_path
-            dir_relative    = re.sub(r'%s/?' % ARGS.source,'', dir_source)
-            dir_dest        = join(ARGS.target, dir_relative)
-            file_source     = join(dir_source, file_name)
-            file_relative   = join(dir_relative, file_name)
-            file_dest       = join(dir_dest, file_name)
 
-            if db.get(file_relative) is None:
-                create_dir(dir_dest, dry_run=DRY_RUN)
-                copy_file(file_source, file_dest, dry_run=DRY_RUN)
-
-                db.save(file_relative, 'unused')
-
-        #print [(fname, hashlib.md5(open('%s/%s' % (dirnpath, fname), 'rb').read()).digest()) for fname in filenames]
-
-    print db.get('key')
-    print db.get_all()
+def sync_dir():
+    "Sync source dir with dest dir"
+    # Launch database connection
+    with Db(db_type='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        # For each files
+        for dir_path, dirs, files in os.walk(ARGS.source):
+            if not files: continue
+            # For each files in dir
+            for file_name in files:
+                # Exemple : -s Video/foo -t dest
+                # Give : src = Video/foo : relative = foo : dst = dest/foo
+                dir_source      = dir_path
+                dir_relative    = re.sub(r'%s/?' % ARGS.source,'', dir_source)
+                dir_dest        = join(ARGS.target, dir_relative)
+                file_source     = join(dir_source, file_name)
+                file_relative   = join(dir_relative, file_name)
+                file_dest       = join(dir_dest, file_name)
+    
+                if db.get(file_relative) is None:
+                    create_dir(dir_dest, dry_run=DRY_RUN)
+                    copy_file(file_source, file_dest, dry_run=DRY_RUN)
+    
+                    db.save(file_relative, 'unused')
+    
+        # Clean empty dir after sync
+        remove_empty_dir(ARGS.target, dry_run=DRY_RUN)
+    #print db.get_all()
     #db.flush_all()
 
+def add_exclude():
+    "Add a exclude dir filter"
+    # Launch database connection
+    with Db(db_type='exclude', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        print db.get_all()
+
+if __name__ == "__main__":
+
+    # Create target dir
+    create_dir(ARGS.target, dry_run=DRY_RUN)
+    add_exclude()
+    sync_dir()
 
 
-
-
-# Clean empty dir after sync
-remove_empty_dir(ARGS.target, dry_run=DRY_RUN)
 # WALK
     #import hashlib
     #for dirnpath, dirnames, filenames in os.walk('Videos'):

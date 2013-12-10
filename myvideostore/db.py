@@ -29,6 +29,9 @@ class Db(object):
         try:
             with open(self._db_file, 'r') as f:
                 self._db = json.load(f)
+                # Add our db_type if not existe (in case of multi type db)
+                if not self._db_type in self._db:
+                    self._db.update({self._db_type: {}})
         except IOError, e:
             self._logger.warning('%s - Load db IOError: %s Use new default db %s'
                                     % (__name__, e, self._db))
