@@ -10,12 +10,12 @@ import os
 import re
 
 
-# TODO
+# TODO ./myvideostore-sync-new-files.py -s Videos/ -t dst
 #X  * Prendre en arg un dossier src et un dst
 #X  * Faire un fichier db à la racine de ce dossier dst
 #X  * La db va contenir le path et un hash du fihier et status (copied)
 #  * Possible d'ajouter des excludes pour les dossiers.
-#     * Idee mettre ca dans un db_type exclude. Ajouter des arg au script pour exclude-add -list -del
+#     * Idee mettre ca dans un db_name exclude. Ajouter des arg au script pour exclude-add -list -del
 #     * Del attendra un ID donné par liste. DB : excludename -> id
 #     * Copy se fait uniquement si le relative_file ne match pas un exclude
 #     * Si c'est une opération sur un exclude ne pas copier les fichiers
@@ -49,6 +49,21 @@ PARSER.add_argument("-x", "--del-exclude",
             metavar='exclude_id',
             type=int,
             nargs='+')
+PARSER.add_argument("-L", "--list-include",
+            help="List all includes with ID. (Don't copy any file)",
+            action='store_true',
+            default=False)
+PARSER.add_argument("-A", "--add-include",
+            help=("Add include in include list. "
+                  "Is take before an exclude (Don't copy any file)"),
+            metavar='include',
+            type=str,
+            nargs='+')
+PARSER.add_argument("-X", "--del-include",
+            help="Delete all include specified (Don't copy any file)",
+            metavar='include_id',
+            type=int,
+            nargs='+')
 PARSER.add_argument("-s", "--source",
             help="Source directory to get videos",
             type=str,
@@ -72,7 +87,7 @@ hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 def sync_dir():
     "Sync source dir with dest dir"
     # Launch database connection
-    with Db(db_type='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+    with Db(db_name='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
         # For each files
         for dir_path, dirs, files in os.walk(ARGS.source):
             if not files: continue
@@ -99,17 +114,74 @@ def sync_dir():
     #db.flush_all()
 
 def add_exclude():
-    "Add a exclude dir filter"
+    "Add an exclude dir filter"
     # Launch database connection
-    with Db(db_type='exclude', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
-        print db.get_all()
+    with Db(db_name='exclude', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for exclude in ARGS.add_exclude:
+            db.save(exclude)
+
+def del_exclude():
+    "Del an exclude"
+    # Launch database connection
+    with Db(db_name='exclude', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for exclude_id in ARGS.del_exclude:
+            db.remove(exclude_id)
+
+def list_exclude():
+    "List all excludes"
+    # Launch database connection
+    with Db(db_name='exclude', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        print 'Excludes :'
+        for key, exclude in enumerate(db.get_all()):
+            print '  - %s : "%s"' % (key, exclude)
+
+def add_include():
+    "Add an include dir filter"
+    # Launch database connection
+    with Db(db_name='include', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for include in ARGS.add_include:
+            db.save(include)
+
+def del_include():
+    "Del an include"
+    # Launch database connection
+    with Db(db_name='include', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for include_id in ARGS.del_include:
+            db.remove(include_id)
+
+def list_include():
+    "List all includes"
+    # Launch database connection
+    with Db(db_name='include', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        print 'Includes :'
+        for key, include in enumerate(db.get_all()):
+            print '  - %s : "%s"' % (key, include)
 
 if __name__ == "__main__":
 
     # Create target dir
     create_dir(ARGS.target, dry_run=DRY_RUN)
-    add_exclude()
-    sync_dir()
+    # List exclude
+    if ARGS.list_exclude:
+        list_exclude()
+    # List include
+    elif ARGS.list_include:
+        list_include()
+    # Add exclude
+    elif ARGS.add_exclude:
+        add_exclude()
+    # Del exclude
+    elif ARGS.del_exclude:
+        del_exclude()
+    # Add include
+    elif ARGS.add_include:
+        add_include()
+    # Del include
+    elif ARGS.del_include:
+        del_include()
+    # Sync
+    else:
+        sync_dir()
 
 
 # WALK
