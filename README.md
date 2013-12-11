@@ -10,3 +10,10 @@ Requirements
 -------------
 
   apt-get install vlc
+
+
+TODO
+-----
+  * Add some unittest in db.py
+  * Write myvideostore-launch script
+  * Write setup.py and package debian for script
