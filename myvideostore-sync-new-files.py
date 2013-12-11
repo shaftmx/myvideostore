@@ -103,10 +103,11 @@ def sync_dir():
                 file_dest       = join(dir_dest, file_name)
     
                 if db.get(file_relative) is None:
-                    create_dir(dir_dest, dry_run=DRY_RUN)
-                    copy_file(file_source, file_dest, dry_run=DRY_RUN)
-    
-                    db.save(file_relative, 'unused')
+                    if is_include(file_relative) \
+                    or not is_exclude(file_relative):
+                        create_dir(dir_dest, dry_run=DRY_RUN)
+                        copy_file(file_source, file_dest, dry_run=DRY_RUN)
+                        db.save(file_relative, 'unused')
     
         # Clean empty dir after sync
         remove_empty_dir(ARGS.target, dry_run=DRY_RUN)
@@ -135,6 +136,14 @@ def list_exclude():
         for key, exclude in enumerate(db.get_all()):
             print '  - %s : "%s"' % (key, exclude)
 
+def is_exclude(line):
+    "Check if file match exclude"
+    with Db(db_name='exclude', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for exclude in db.get_all():
+            if re.search(exclude, line):
+                return True
+        return False
+
 def add_include():
     "Add an include dir filter"
     # Launch database connection
@@ -148,6 +157,14 @@ def del_include():
     with Db(db_name='include', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
         for include_id in ARGS.del_include:
             db.remove(include_id)
+
+def is_include(line):
+    "Check if file match include"
+    with Db(db_name='include', db_type='list', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for include in db.get_all():
+            if re.search(include, line):
+                return True
+        return False
 
 def list_include():
     "List all includes"

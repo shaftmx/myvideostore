@@ -16,7 +16,10 @@ class Db(object):
         self._db_name = db_name
         self._dry_run = dry_run
         self._logger = logging.getLogger(logger)
-        self._db = {}
+        if self._db_type == 'list':
+            self._db = {self._db_name: []}
+        else:
+            self._db = {self._db_name: {}}
 
     def __enter__(self):
         self._load_db()
@@ -60,7 +63,11 @@ class Db(object):
     def remove(self, key):
         "Write data in the database"
         if self._db_type == 'list':
-            self._db[self._db_name].pop(key)
+            try:
+                self._db[self._db_name].pop(key)
+            except IndexError:
+                self._logger.critical("Unable to find id %s" % key)
+                
         else:
             del self._db[self._db_name][key]
 

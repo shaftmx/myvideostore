@@ -87,11 +87,10 @@ class Sync_new_files_TestCase(TestCase):
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
         dir_dest = self.run_cmd('find ./Videos_dest.tests ! -name db.json -printf "%P\n"')
         self.assertEquals(sorted(dir_expected), sorted(dir_dest))
-
         # Delete exclude
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
                      '-t ./Videos_dest.tests '
-                     '--del-exclude 1')
+                     '--del-exclude 0')
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
         dir_dest = self.run_cmd('find ./Videos_dest.tests ! -name db.json -printf "%P\n"')
         dir_expected.append('space dir')
