@@ -115,7 +115,7 @@ class Sync_new_files_TestCase(TestCase):
         # Include bar
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
                      '-t ./Videos_dest.tests '
-                     '--add-include "^bar"')
+                     '--add-include "^bar/"')
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
         dir_dest = self.run_cmd('find ./Videos_dest.tests ! -name db.json -printf "%P\n"')
         self.assertEquals(sorted(dir_expected), sorted(dir_dest))
