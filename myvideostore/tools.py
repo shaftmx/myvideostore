@@ -56,6 +56,7 @@ def copy_file(source, dest, dry_run=False):
 def check_file_consistency(source, dest, dry_run=False):
     if dry_run:
          LOG.warning('Check file consistency between %s -> %s' % (source, dest))
+         return True
     else:
         LOG.info('Check file consistency between %s -> %s' % (source, dest))
         sum_source = hashlib.md5(open(source, 'rb').read()).hexdigest()

@@ -5,11 +5,29 @@ Small cli script with this features : (Work in progress)
   * Sync only new video in your server. Allow include et exclude rules
   * Browse your video directory, tag viewed video and launch vlc
 
-Requirements
+
+
+
+Installation
 ============
 
+**Requirements :**
+
 For myvideostore-launch.py
-  apt-get install vlc
+
+    apt-get install vlc
+
+**Setup :**
+
+Just clone the repo :
+
+    git clone https://github.com/shaftmx/myvideostore
+
+And launch setup.py and it's done.
+
+    cd myvideostore && python setyp.py install
+
+For update version you can do a git pull and apply the setup commands
 
 Usage
 ======
