@@ -84,4 +84,3 @@ TODO
   * Add some unittest in db.py
   * Write myvideostore-launch script
   * Write setup.py and package debian for script
-  * Check the file is copied before adding it in the database (in case of disk full)

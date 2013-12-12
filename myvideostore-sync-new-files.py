@@ -3,7 +3,7 @@
 import logging
 from myvideostore.tools import Print
 from myvideostore.db import Db
-from myvideostore.tools import create_dir, copy_file, remove_empty_dir
+from myvideostore.tools import create_dir, copy_file, remove_empty_dir, check_file_consistency
 import argparse
 from os.path import join
 import os
@@ -107,7 +107,11 @@ def sync_dir():
                     or not is_exclude(file_relative):
                         create_dir(dir_dest, dry_run=DRY_RUN)
                         copy_file(file_source, file_dest, dry_run=DRY_RUN)
-                        db.save(file_relative, 'unused')
+                        if check_file_consistency(file_source, file_dest, dry_run=DRY_RUN):
+                            db.save(file_relative, 'unused')
+                        else:
+                            LOG.critical("Error file is not consistent "
+                                         "the sum don't match")
     
         # Clean empty dir after sync
         remove_empty_dir(ARGS.target, dry_run=DRY_RUN)

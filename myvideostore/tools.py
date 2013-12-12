@@ -5,6 +5,7 @@ import logging
 import os
 from shutil import copy2 as copy
 from os.path import join
+import hashlib
 
 LOG = logging.getLogger(__name__)
 
@@ -51,6 +52,17 @@ def copy_file(source, dest, dry_run=False):
     else:
         LOG.info('Copy file : %s' % dest)
         copy(source, dest)
+
+def check_file_consistency(source, dest, dry_run=False):
+    if dry_run:
+         LOG.warning('Check file consistency between %s -> %s' % (source, dest))
+    else:
+        LOG.info('Check file consistency between %s -> %s' % (source, dest))
+        sum_source = hashlib.md5(open(source, 'rb').read()).hexdigest()
+        sum_dest = hashlib.md5(open(dest, 'rb').read()).hexdigest()
+        LOG.debug('Sum : %s %s' % (sum_source, sum_dest))
+        if sum_source != sum_dest: return False
+        else: return True
 
 def create_dir(path, dry_run=False):
     if dry_run:
