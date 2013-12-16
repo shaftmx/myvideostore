@@ -5,7 +5,7 @@ import os
 import curses
 import logging
 import argparse
-from myvideostore.tools import Print
+from myvideostore.tools import Print, len_without_none
 from myvideostore.db import Db
 from itertools import izip_longest
 
@@ -81,9 +81,14 @@ class NavCurses(object):
         #self._window.addstr(0, 0, "Current mode: Typing mode", curses.A_UNDERLINE)
         #self._window.addstr(0, 0, "Current mode: Typing mode", curses.A_BOLD)
         #self._window.addstr(0, 0, "Current mode: Typing mode", curses.A_BLINK)
-    
-    
-    def _display_menu(self, title, menu, active=1):
+
+    def _init_window(self):
+            self._window.border(0)
+
+    def _display_menu(self, title, page, active_pos=1):
+        # Init window in case of clean
+        self._init_window()
+
         # Window title
         self._window.addstr(0, 0, os.path.basename(__file__), curses.A_NORMAL | curses.A_BOLD)
         # Title
@@ -92,13 +97,14 @@ class NavCurses(object):
 
         item_pos = 4
         pos = 1
-        for item in menu:
+        for item in page:
+            if item is None: continue
             if item['type'] == 'file':
                 color = self._color_video
             else:
                 color = self._color_directory
              
-            if pos == active:
+            if pos == active_pos:
                 color |= curses.A_UNDERLINE
                 #color |= curses.A_UNDERLINE | curses.A_BOLD
 
@@ -109,7 +115,24 @@ class NavCurses(object):
         self._window.refresh()
     
     
-    def _getkey(self, final, title, menu, active_pos = 1):
+    def _launch_app(self):
+
+        # Init window
+        self._init_window()
+
+        # All this things in _getkey ---------
+        # Display navigate menu
+        #directory_pages.next()
+
+        title = ARGS.directory
+    
+        #choice = self._getkey(len(page), title, page)
+        #self._window.addstr(len(page) + 5, 1,
+        #    "Choix de l'utilisateur : %s (%d)" % (page[choice-1], choice))
+        #self._window.addstr(len(page) + 6, 1, "Appuyez sur une touche pour sortir")
+        #self._window.refresh()
+        #c = self._window.getch()
+        # -------------------
         # int to key chr(10) Inverse str -> int ord('\n')
         # LOG.critical('Key : %s' % c)
         # Key mapping
@@ -118,20 +141,52 @@ class NavCurses(object):
         KEY_DOWN = 66
         KEY_LEFT = 68
         KEY_RIGHT = 67
+        KEY_Q = 113
         c = None
-        while c != KEY_ENTER:
-            c = self._window.getch()
+        active_pos = 1
+        # Get dir content
+        directory_pages = self._paginate(self._dir_explore(ARGS.directory),
+                                         lines=4)
+        page = directory_pages.get_content()
+        while c != KEY_Q:
+            LOG.critical('%s' % c)
             if c == KEY_DOWN:
-              if active_pos != final:
+              if active_pos < len_without_none(page):
                 active_pos += 1
               else:
                 active_pos = 1
             elif c == KEY_UP:
-              if active_pos != 1:
+              if active_pos > 1:
                 active_pos -= 1
               else:
-                active_pos = final
-            self._display_menu(title, menu, active_pos)
+                active_pos = len_without_none(page)
+            elif c == KEY_RIGHT:
+                directory_pages.next()
+                page = directory_pages.get_content()
+                self._window.clear()
+                active_pos = 1
+            elif c == KEY_LEFT:
+                directory_pages.previous()
+                page = directory_pages.get_content()
+                self._window.clear()
+                active_pos = 1
+            elif c == KEY_ENTER:
+                item = page[active_pos - 1]
+                if item['type'] == 'directory':
+                    directory_pages = self._paginate(self._dir_explore('%s/%s' % (ARGS.directory, item['name'])),
+                                                     lines=4)
+                    page = directory_pages.get_content()
+                    self._window.clear()
+                    active_pos = 1
+                LOG.critical('Selected : %s' % item['name'])
+            
+            self._display_menu(title, page, active_pos)
+
+            # Pages status
+            self._window.addstr(len(page) + 6, 1,
+                    "Page %s/%s" % (directory_pages._current, directory_pages._total))
+            # Get key
+            c = self._window.getch()
         return active_pos
 
     def _grouper(self, iterable, n, fillvalue=None):
@@ -147,11 +202,11 @@ class NavCurses(object):
             def __init__(self, pages):
                 self._pages = pages
                 self._current = 0
-                self._total = len(self._pages)
+                self._total = len(self._pages) - 1
             def get_content(self):
                 return self._pages[self._current]
             def next(self):
-                if self._current < (self._total - 1):
+                if self._current < self._total:
                     self._current += 1
             def previous(self):
                 if self._current > 0:
@@ -182,27 +237,12 @@ class NavCurses(object):
     
             # Initialisation des couleurs
             self._init_colors()
-    
+
             # Création de la sous-fenêtre
             self._window = stdscr.subwin(40, 90, 3, 5)
-            self._window.border(0)
-
-            # All this things in _getkey ---------
-            # Display navigate menu
-            directory_pages = self._paginate(self._dir_explore(ARGS.directory), 4)
-            menu_list = directory_pages.get_content()
-            #directory_pages.next()
-
-            title = ARGS.directory
-            self._display_menu(title, menu_list)
     
-            choice = self._getkey(len(menu_list), title, menu_list)
-            self._window.addstr(len(menu_list) + 5, 1,
-                "Choix de l'utilisateur : %s (%d)" % (menu_list[choice-1], choice))
-            self._window.addstr(len(menu_list) + 6, 1, "Appuyez sur une touche pour sortir")
-            self._window.refresh()
-            c = self._window.getch()
-            # -------------------
+            self._launch_app()
+
         finally:
             #Fermeture de curses
             self._close_curses(stdscr)

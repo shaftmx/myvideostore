@@ -84,4 +84,9 @@ def remove_empty_dir(path, dry_run=False):
                     os.removedirs(fname)
                 LOG.info('Delete empty directory : %s' % fname)
 
-
+def len_without_none(array):
+    len = 0
+    for i in array:
+        if i is None: continue
+        len += 1
+    return len
