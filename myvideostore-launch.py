@@ -8,6 +8,7 @@ import argparse
 from myvideostore.tools import Print, len_without_none
 from myvideostore.db import Db
 from itertools import izip_longest
+from os.path import join, dirname
 
 
 # TODO
@@ -16,12 +17,14 @@ from itertools import izip_longest
 #  * La db va contenir le status (vue ou non) et les nouvelles videos
 #  * Le menu permettera de :
 #    * Refresh les video (ou auto quand on entre dans un dossier maxdepth 1)
-#    * Naviguer dans les dossiers
+#X    * Naviguer dans les dossiers
 #    * Rendre vu ou non une video
 #    * Lancer vlc et rendre vu cette video
 #    * + Supprimer une video du disque
+#      * si le dossier est vide supprimer le dossier aussi
 #    * Afficher les nouvelles videos (entrée par le dernier sync)
-#    * si le dossier est vide supprimer le dossier aussi
+#  * Display help at last line of the screen
+#  * Get screen width and height in var and generate dynamic display
 
 # Init logging level with debug stream handler
 LOG = logging.getLogger()
@@ -136,20 +139,28 @@ class NavCurses(object):
         # int to key chr(10) Inverse str -> int ord('\n')
         # LOG.critical('Key : %s' % c)
         # Key mapping
+        KEY_RETURN = 127
+        KEY_DEL = 126
         KEY_ENTER = 10
         KEY_UP = 65
         KEY_DOWN = 66
         KEY_LEFT = 68
         KEY_RIGHT = 67
         KEY_Q = 113
+        KEY_SPACE = 32
         c = None
         active_pos = 1
         # Get dir content
+        current_relativ_dir = ''
         directory_pages = self._paginate(self._dir_explore(ARGS.directory),
                                          lines=4)
         page = directory_pages.get_content()
         while c != KEY_Q:
-            LOG.critical('%s' % c)
+            #LOG.critical('%s' % c)
+
+            # Get selected item
+            item = page[active_pos - 1]
+
             if c == KEY_DOWN:
               if active_pos < len_without_none(page):
                 active_pos += 1
@@ -161,24 +172,43 @@ class NavCurses(object):
               else:
                 active_pos = len_without_none(page)
             elif c == KEY_RIGHT:
+                # Change directory page and get content
                 directory_pages.next()
                 page = directory_pages.get_content()
+                # Clear screen
                 self._window.clear()
                 active_pos = 1
             elif c == KEY_LEFT:
+                # Change directory page and get content
                 directory_pages.previous()
                 page = directory_pages.get_content()
+                # Clear screen
                 self._window.clear()
                 active_pos = 1
+            elif c in [KEY_RETURN, KEY_DEL]:
+                if item['type'] == 'file':
+                    LOG.critical('Delete file %s' % join(ARGS.directory, current_relativ_dir, item['name']))
+            elif c == KEY_SPACE:
+                if item['type'] == 'file':
+                    LOG.critical('Mark video file %s' % join(ARGS.directory, current_relativ_dir, item['name']))
             elif c == KEY_ENTER:
-                item = page[active_pos - 1]
                 if item['type'] == 'directory':
-                    directory_pages = self._paginate(self._dir_explore('%s/%s' % (ARGS.directory, item['name'])),
-                                                     lines=4)
+                    # Change current dir
+                    if item['name'] == '..':
+                        current_relativ_dir = dirname(current_relativ_dir)
+                    else:
+                        current_relativ_dir = join(current_relativ_dir, item['name'])
+                    # explore new dir
+                    directory_pages = self._paginate(
+                                            self._dir_explore(join(ARGS.directory, current_relativ_dir)),
+                                            lines=4)
+                    # Paginate the content
                     page = directory_pages.get_content()
+                    # Clear screen
                     self._window.clear()
                     active_pos = 1
-                LOG.critical('Selected : %s' % item['name'])
+                else:
+                    LOG.critical('Launch vlc on %s' % join(ARGS.directory, current_relativ_dir, item['name']))
             
             self._display_menu(title, page, active_pos)
 
@@ -214,7 +244,7 @@ class NavCurses(object):
         return Pages([ page for page in self._grouper(iterable, lines)])
 
     def _dir_explore(self, directory):
-        dir_path = ARGS.directory
+        dir_path = directory
         files = []
         dirs = []
         for filename in os.listdir(directory):
