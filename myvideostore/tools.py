@@ -90,3 +90,19 @@ def len_without_none(array):
         if i is None: continue
         len += 1
     return len
+
+class Keycode(object):
+    # int to key chr(10) Inverse str -> int ord('\n')
+    # LOG.critical('Key : %s' % c)
+    code_return = 127
+    code_del = 126
+    code_enter = 10
+    code_up = 65
+    code_down = 66
+    code_left = 68
+    code_right = 67
+    code_q = 113
+    code_space = 32
+    code_h = 104
+    code_v = 118
+
