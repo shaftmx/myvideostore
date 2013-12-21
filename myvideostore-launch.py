@@ -11,21 +11,6 @@ from myvideostore.db import Db
 from itertools import izip_longest
 from os.path import join, dirname
 
-
-# TODO
-#X  * Prendre en arg un dossier
-#X  * Faire un fichier db à la racine de ce dossier
-#X  * La db va contenir le status (vue ou non) et les nouvelles videos
-#  * Le menu permettera de :
-#X    * Refresh les video (ou auto quand on entre dans un dossier maxdepth 1)
-#X    * Naviguer dans les dossiers
-#X    * Rendre vu ou non une video
-#    * Lancer vlc et rendre vu cette video
-#X    * + Supprimer une video du disque
-#X      * si le dossier est vide supprimer le dossier aussi
-#    * Afficher les nouvelles videos (entrée par le dernier sync)
-#X  * Display help at last line of the screen
-
 # Init logging level with debug stream handler
 LOG = logging.getLogger()
 LOG.setLevel(logging.INFO)
@@ -33,7 +18,7 @@ logformat =  '%(asctime)s %(levelname)s -: %(message)s'
 # Set logger formater
 formatter = logging.Formatter(logformat)
 #hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
-hdl = logging.FileHandler('/tmp/log'); hdl.setFormatter(formatter); LOG.addHandler(hdl)
+hdl = logging.FileHandler('/tmp/%s.log' % __name__); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument("-d", "--directory",
@@ -71,7 +56,6 @@ class NavCurses(object):
         stdscr.keypad(1)
         curses.curs_set(0) # make cursor invisible
         return stdscr
-    
     
     def _close_curses(self, stdscr):
       stdscr.keypad(0)
@@ -127,13 +111,11 @@ class NavCurses(object):
     def _display_menu(self, title, page, active_pos=1):
         # Init window in case of clean
         self._init_window()
-
         # Window title
         self._window.addstr(0, 0, os.path.basename(__file__), curses.A_NORMAL | curses.A_BOLD)
         # Title
         self._window.addstr(1, 1, title, curses.color_pair(1))
         self._window.addstr(3, 1, "Sélectionnez une entrée...")
-
         # Display usage
         self._window.addstr(self._height - 2 , 1, "Usage : q/exit   h/help   v/vlc")
 
@@ -148,25 +130,21 @@ class NavCurses(object):
                     color = self._color_video
             else:
                 color = self._color_directory
-             
             if pos == active_pos:
                 color |= curses.A_UNDERLINE
                 #color |= curses.A_UNDERLINE | curses.A_BOLD
-
             self._window.addstr(item_pos, 1, "    - %s" % (item['name']), color)
             #self._window.addstr(item_pos, 1, "    %d. %s" % (pos, item['name']), color)
             item_pos += 1
             pos += 1
-    
         self._window.refresh()
     
     def _launch_app(self):
 
         # Init window
         self._init_window()
-
         title = ARGS.directory
-    
+
         # Key mapping
         key = Keycode()
         c = None
@@ -183,16 +161,19 @@ class NavCurses(object):
             # Get selected item
             item = page[active_pos - 1]
 
+            # -- DOWN
             if c == key.code_down:
               if active_pos < len_without_none(page):
                 active_pos += 1
               else:
                 active_pos = 1
+            # -- UP
             elif c == key.code_up:
               if active_pos > 1:
                 active_pos -= 1
               else:
                 active_pos = len_without_none(page)
+            # -- RIGHT
             elif c == key.code_right:
                 # Change directory page and get content
                 directory_pages.next()
@@ -200,6 +181,7 @@ class NavCurses(object):
                 # Clear screen
                 self._window.clear()
                 active_pos = 1
+            # -- LEFT
             elif c == key.code_left:
                 # Change directory page and get content
                 directory_pages.previous()
@@ -207,8 +189,10 @@ class NavCurses(object):
                 # Clear screen
                 self._window.clear()
                 active_pos = 1
+            # -- H
             elif c == key.code_h:
                 self._display_help()
+            # -- RETURN
             elif c in [key.code_return, key.code_del]:
                 if item['type'] == 'file':
                     # Unmark if marked
@@ -230,6 +214,7 @@ class NavCurses(object):
                     # Paginate the content
                     page = directory_pages.get_content()
                     self._window.clear()
+            # -- SPACE
             elif c == key.code_space:
                 if item['type'] == 'file':
                     # mark as viewed
@@ -242,8 +227,7 @@ class NavCurses(object):
                         else:
                             db.save(join(current_relativ_dir,item['name']), 'unused')
                             item['marked'] = True
-                    LOG.critical('Mark video file %s' % item)
-
+            # -- ENTER
             elif c == key.code_enter:
                 if item['type'] == 'directory':
                     # Change current dir
@@ -260,12 +244,14 @@ class NavCurses(object):
                     # Clear screen
                     self._window.clear()
                     active_pos = 1
+            # -- V
             elif c == key.code_v:
                 video_path = join(ARGS.directory, current_relativ_dir, item['name'])
                 LOG.warning('Launch vlc on %s' % video_path)
                 subprocess.call("vlc %s" % video_path, shell=True)
                 self._window.clear()
-            
+
+            # Display menu
             self._display_menu(title, page, active_pos)
 
             # Pages status
@@ -326,17 +312,3 @@ class NavCurses(object):
 if __name__ == "__main__":
     gui = NavCurses(width=90, height=40)
     gui.launch_curses()
-# WALK
-    #import hashlib
-    #for dirnpath, dirnames, filenames in os.walk('Videos'):
-        #print dirnpath, filenames
-        #if not filenames: continue
-        #print [(fname, hashlib.md5(open('%s/%s' % (dirnpath, fname), 'rb').read()).digest()) for fname in filenames]
-# Copy with progress http://stackoverflow.com/questions/274493/how-to-copy-a-file-in-python-with-a-progress-bar
-
-# DATABASE
-#    with Db(db_file='/tmp/db.json') as db:
-#        db.save('key', 'value')
-#        print db.get('key')
-#        print db.get_all()
-
