@@ -248,7 +248,7 @@ class NavCurses(object):
             elif c == key.code_v:
                 video_path = join(ARGS.directory, current_relativ_dir, item['name'])
                 LOG.warning('Launch vlc on %s' % video_path)
-                subprocess.call("vlc %s" % video_path, shell=True)
+                subprocess.call("vlc '%s'" % video_path, shell=True)
                 self._window.clear()
 
             # Display menu
