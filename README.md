@@ -34,6 +34,32 @@ Usage
 
 myvideostore-launch.py
 ----------------------
+**How it's work :** This script put db.json file inside the directory.
+
+**Features :**
+  * Browse directory
+  * Remove video file and empty dirs
+  * Mark file as viewed
+  * Launch vlc
+
+
+
+**Example :**
+
+Launch sync dir in dry run mode (do nothings) :
+
+    myvideostore-launch.py --directory Videos
+
+**Screenshots**
+
+Menu :
+
+![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/menu.png)
+
+Help :
+
+![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/help.png)
+
 
 
 myvideostore-sync-new-files.py
@@ -42,6 +68,7 @@ myvideostore-sync-new-files.py
 **How it's work :** This script create target dir and put db.json file inside the target dir. When you launch a sync, each file copied are added in the db.json. File already in db.json will not be copied.
 You also can add exclude and include filter.
 
+  * Browse your video directory, tag viewed video and launch vlc
 
 
 **Help :**
