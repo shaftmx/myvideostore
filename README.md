@@ -1,11 +1,9 @@
 myvideostore
 ============
 
-Small cli script with this features : (Work in progress)
-  * Sync only new video in your server. Allow include et exclude rules
+Small cli script with this features :
+  * Sync only new video in your server. Allow include et exclude rules.
   * Browse your video directory, tag viewed video and launch vlc
-
-
 
 
 Installation
@@ -31,35 +29,6 @@ For update version you can do a git pull and apply the setup commands
 
 Usage
 ======
-
-myvideostore-launch.py
-----------------------
-**How it's work :** This script put db.json file inside the directory.
-
-**Features :**
-  * Browse directory
-  * Remove video file and empty dirs
-  * Mark file as viewed
-  * Launch vlc
-
-
-
-**Example :**
-
-Launch sync dir in dry run mode (do nothings) :
-
-    myvideostore-launch.py --directory Videos
-
-**Screenshots**
-
-Menu :
-
-![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/menu.png)
-
-Help :
-
-![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/help.png)
-
 
 
 myvideostore-sync-new-files.py
@@ -124,8 +93,31 @@ Finally launch the sync :
 
     myvideostore-sync-new-files.py --source Videos --target myVideos
 
-TODO
-=====
-  * Add some unittest in db.py
-  * Write myvideostore-launch script
-  * Write setup.py and package debian for script
+
+myvideostore-launch.py
+----------------------
+**How it's work :** This script put db.json file inside the directory.
+
+**Features :**
+  * Browse directory
+  * Remove video file and empty dirs
+  * Mark file as viewed
+  * Launch vlc
+
+
+
+**Example :**
+
+Launch sync dir in dry run mode (do nothings) :
+
+    myvideostore-launch.py --directory Videos
+
+**Screenshots**
+
+Menu :
+
+![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/menu.png)
+
+Help :
+
+![ScreenShot](https://raw.github.com/shaftmx/myvideostore/master/docs/img/help.png)
