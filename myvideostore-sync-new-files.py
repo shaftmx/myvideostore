@@ -9,21 +9,6 @@ from os.path import join
 import os
 import re
 
-
-# TODO ./myvideostore-sync-new-files.py -s Videos/ -t dst
-#X  * Prendre en arg un dossier src et un dst
-#X  * Faire un fichier db à la racine de ce dossier dst
-#X  * La db va contenir le path et un hash du fihier et status (copied)
-#  * Possible d'ajouter des excludes pour les dossiers.
-#     * Idee mettre ca dans un db_name exclude. Ajouter des arg au script pour exclude-add -list -del
-#     * Del attendra un ID donné par liste. DB : excludename -> id
-#     * Copy se fait uniquement si le relative_file ne match pas un exclude
-#     * Si c'est une opération sur un exclude ne pas copier les fichiers
-#X  * copier les nouveaux fichiers et reconstruire l'arbo
-#X  * Apres passage du sync clean des dossiers vides
-#  * + Ajouter la liste des nouvelles videos dans la db du videostore
-
-
 # Init logging level with debug stream handler
 LOG = logging.getLogger()
 LOG.setLevel(logging.CRITICAL)
@@ -83,7 +68,6 @@ formatter = logging.Formatter(logformat)
 hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 
 
-
 def sync_dir():
     "Sync source dir with dest dir"
     # Launch database connection
@@ -112,11 +96,8 @@ def sync_dir():
                         else:
                             LOG.critical("Error file is not consistent "
                                          "the sum don't match")
-    
         # Clean empty dir after sync
         remove_empty_dir(ARGS.target, dry_run=DRY_RUN)
-    #print db.get_all()
-    #db.flush_all()
 
 def add_exclude():
     "Add an exclude dir filter"
@@ -204,17 +185,3 @@ if __name__ == "__main__":
     else:
         sync_dir()
 
-
-# WALK
-    #import hashlib
-    #for dirnpath, dirnames, filenames in os.walk('Videos'):
-        #print dirnpath, filenames
-        #if not filenames: continue
-        #print [(fname, hashlib.md5(open('%s/%s' % (dirnpath, fname), 'rb').read()).digest()) for fname in filenames]
-# Copy with progress http://stackoverflow.com/questions/274493/how-to-copy-a-file-in-python-with-a-progress-bar
-
-# DATABASE
-#    with Db(db_file='/tmp/db.json') as db:
-#        db.save('key', 'value')
-#        print db.get('key')
-#        print db.get_all()
