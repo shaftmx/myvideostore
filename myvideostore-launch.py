@@ -194,7 +194,8 @@ class NavCurses(object):
                 self._display_help()
             # -- RETURN
             elif c in [key.code_return, key.code_del]:
-                if item['type'] == 'file':
+                LOG.critical(type(item))
+                if item.get('type') == 'file':
                     # Unmark if marked
                     if item['marked']:
                         with Db(db_name='library', db_file='%s/db.json' % ARGS.directory) as db:
@@ -216,7 +217,7 @@ class NavCurses(object):
                     self._window.clear()
             # -- SPACE
             elif c == key.code_space:
-                if item['type'] == 'file':
+                if item.get('type') == 'file':
                     # mark as viewed
                     with Db(db_name='library', db_file='%s/db.json' % ARGS.directory) as db:
                         # Unmark
@@ -229,7 +230,7 @@ class NavCurses(object):
                             item['marked'] = True
             # -- ENTER
             elif c == key.code_enter:
-                if item['type'] == 'directory':
+                if item.get('type') == 'directory':
                     # Change current dir
                     if item['name'] == '..':
                         current_relativ_dir = dirname(current_relativ_dir)
