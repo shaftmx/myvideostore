@@ -83,7 +83,7 @@ class Db(object):
         if self._db_type == 'list':
             return key if myItem in self._db[self._db_name] else None
         else:
-            return self._db.get(self._db_name, {}).get(key, None)
+            return self._db.get(self._db_name, {}).get('%s' % key.decode('utf-8'), None)
 
     def get_all(self):
         "Get all data from database"

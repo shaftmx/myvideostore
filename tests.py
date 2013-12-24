@@ -49,6 +49,7 @@ class Sync_new_files_TestCase(TestCase):
                     'bar/s1/1',
                     'space dir',
                     'space dir/episode 1',
+                    'blé'
                    ]
         # Lunch first sync with all files
         self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
@@ -78,6 +79,7 @@ class Sync_new_files_TestCase(TestCase):
                     'bar',
                     'bar/s1',
                     'bar/s1/1',
+                    'blé'
                    ]
 
         # Exlude one dir
