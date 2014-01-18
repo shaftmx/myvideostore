@@ -61,9 +61,11 @@ PARSER.add_argument("-t", "--target",
             required=True)
 PARSER.add_argument("--pre",
             help="Launch a command before sync directory",
+            metavar='pre_cmd',
             type=str)
 PARSER.add_argument("--post",
             help="Launch a command after sync directory",
+            metavar='post_cmd',
             type=str)
 ARGS = PARSER.parse_args()
 

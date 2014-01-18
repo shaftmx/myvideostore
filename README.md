@@ -67,6 +67,8 @@ You also can add exclude and include filter.
                           Source directory to get videos
     -t TARGET, --target TARGET
                           Target directory where you want copy your videos
+    --pre pre_cmd         Launch a command before sync directory
+    --post post_cmd       Launch a command after sync directory
 
 
 **Example :**
@@ -75,9 +77,13 @@ Launch sync dir in dry run mode (do nothings) :
 
     myvideostore-sync-new-files.py --source Videos --target myVideos --dry-run
 
-Sync the directory :
+Sync a directory :
 
     myvideostore-sync-new-files.py --source Videos --target myVideos
+
+Launch pre and post command :
+
+    myvideostore-sync-new-files.py --source Videos --target myVideos --pre "mount Videos" --post "sync ; umount Videos"
 
 **Use case** : I have an existing dir with subdir foo and bar. I only want things in bar. The easy way is exclude all and implicy include bar.
 
