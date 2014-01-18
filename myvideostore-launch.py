@@ -309,7 +309,7 @@ class NavCurses(object):
         finally:
             #Fermeture de curses
             self._close_curses(stdscr)
-            if ERROR:
+            if 'ERROR' in vars():
                 LOG.critical(ERROR)
                 print ERROR
             
