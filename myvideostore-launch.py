@@ -140,7 +140,6 @@ class NavCurses(object):
         self._window.refresh()
     
     def _launch_app(self):
-
         # Init window
         self._init_window()
         title = ARGS.directory
@@ -305,9 +304,15 @@ class NavCurses(object):
     
             self._launch_app()
 
+        except curses.error:
+            ERROR = 'Error : terminal size too small'
         finally:
             #Fermeture de curses
             self._close_curses(stdscr)
+            if ERROR:
+                LOG.critical(ERROR)
+                print ERROR
+            
 
 # ./myvideostore-launch.py -d Videos.tests/
 if __name__ == "__main__":
