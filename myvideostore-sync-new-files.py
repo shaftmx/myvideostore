@@ -8,6 +8,8 @@ import argparse
 from os.path import join
 import os
 import re
+import sys
+import subprocess
 
 # Init logging level with debug stream handler
 LOG = logging.getLogger()
@@ -57,6 +59,12 @@ PARSER.add_argument("-t", "--target",
             help="Target directory where you want copy your videos",
             type=str,
             required=True)
+PARSER.add_argument("--pre",
+            help="Launch a command before sync directory",
+            type=str)
+PARSER.add_argument("--post",
+            help="Launch a command after sync directory",
+            type=str)
 ARGS = PARSER.parse_args()
 
 DRY_RUN = ARGS.dry_run
@@ -67,9 +75,19 @@ else: logformat =  '%(asctime)s %(levelname)s -: %(message)s'
 formatter = logging.Formatter(logformat)
 hdl = logging.StreamHandler(); hdl.setFormatter(formatter); LOG.addHandler(hdl)
 
+def run_cmd(cmd, dry_run=False):
+    if dry_run:
+        LOG.warning('Exec command %s' % cmd)
+    else:
+        LOG.info('Exec command %s' % cmd)
+        output = subprocess.call(cmd, shell=True)
+        if output != 0:
+            LOG.critical('Command ERROR %s return code : %d' % (cmd, output))
+            sys.exit(output)
 
 def sync_dir():
     "Sync source dir with dest dir"
+    LOG.warning('Start sync dir ...')
     # Launch database connection
     with Db(db_name='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
         # For each files
@@ -183,5 +201,12 @@ if __name__ == "__main__":
         del_include()
     # Sync
     else:
+        # Launch pre command
+        if ARGS.pre:
+            run_cmd(ARGS.pre,dry_run=DRY_RUN)
+        # Sync dir
         sync_dir()
+        # Launch post command
+        if ARGS.post:
+            run_cmd(ARGS.post,dry_run=DRY_RUN)
 

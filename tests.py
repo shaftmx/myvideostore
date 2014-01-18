@@ -122,5 +122,52 @@ class Sync_new_files_TestCase(TestCase):
         dir_dest = self.run_cmd('find ./Videos_dest.tests ! -name db.json -printf "%P\n"')
         self.assertEquals(sorted(dir_expected), sorted(dir_dest))
 
+    def test_basic_pre_cmd(self):
+        # pre cmd create file
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
+                     '-t ./Videos_dest.tests '
+                     '--pre "touch ./Videos_dest.tests/pre_cmd"')
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        dir_dest = self.run_cmd('find ./Videos_dest.tests -name pre_cmd -printf "%P\n"')
+        self.assertEquals(sorted(['pre_cmd']), sorted(dir_dest))
+
+    def test_basic_post_cmd(self):
+        # post cmd create file
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
+                     '-t ./Videos_dest.tests '
+                     '--post "touch ./Videos_dest.tests/post_cmd"')
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        dir_dest = self.run_cmd('find ./Videos_dest.tests -name post_cmd -printf "%P\n"')
+        self.assertEquals(sorted(['post_cmd']), sorted(dir_dest))
+
+    def test_basic_pre_post_cmd_error(self):
+        # Launch pre cmd error script must exit so no post cmd
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
+                     '-t ./Videos_dest.tests '
+                     '--post "touch ./Videos_dest.tests/post_cmd" '
+                     '--pre "false"')
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        dir_dest = self.run_cmd('find ./Videos_dest.tests -name "*_cmd" -printf "%P\n"')
+        self.assertEquals(sorted([]), sorted(dir_dest))
+
+        # Launch post cmd error script must exit so only pre cmd executed
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
+                     '-t ./Videos_dest.tests '
+                     '--post "false" '
+                     '--pre "touch ./Videos_dest.tests/pre_cmd"')
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        dir_dest = self.run_cmd('find ./Videos_dest.tests -name "*_cmd" -printf "%P\n"')
+        self.assertEquals(sorted(['pre_cmd']), sorted(dir_dest))
+
+    def test_basic_pre_post_cmd(self):
+        # Launch pre and post cmd
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests '
+                     '-t ./Videos_dest.tests '
+                     '--post "touch ./Videos_dest.tests/post_cmd" '
+                     '--pre "touch ./Videos_dest.tests/pre_cmd"')
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        dir_dest = self.run_cmd('find ./Videos_dest.tests -name "*_cmd" -printf "%P\n"')
+        self.assertEquals(sorted(['post_cmd','pre_cmd']), sorted(dir_dest))
+
 if __name__ == '__main__':
     unittest.main()
