@@ -67,6 +67,14 @@ PARSER.add_argument("--post",
             help="Launch a command after sync directory",
             metavar='post_cmd',
             type=str)
+PARSER.add_argument("--db-list",
+            help="List all file already copied in db",
+            action='store_true',
+            default=False)
+PARSER.add_argument("--db-purge",
+            help=("Specify a regex and purge matching entry in db"),
+            metavar='regex',
+            type=str)
 ARGS = PARSER.parse_args()
 
 DRY_RUN = ARGS.dry_run
@@ -179,6 +187,30 @@ def list_include():
         for key, include in enumerate(db.get_all()):
             print '  - %s : "%s"' % (key, include)
 
+def db_list():
+    "List all file in db"
+    with Db(db_name='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        for k,v in db.get_all().iteritems():
+            print " - %s" % k.encode('utf-8')
+
+def db_purge(regex):
+    "Purge file matching regex in db"
+    _buffer = []
+    with Db(db_name='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+        print "File in db matching %s :" % regex
+        for k,v in db.get_all().iteritems():
+            name = k.encode('utf-8')
+            matched = re.match(regex, name)
+            if matched is not None:
+                _buffer.append(name)
+                print " - %s" % (name)
+    
+        choice = raw_input('Realy want to delete there files y/N:')
+        if choice == 'y':
+            for name in _buffer:
+                db.remove(name)
+
+
 if __name__ == "__main__":
 
     # Create target dir
@@ -201,6 +233,12 @@ if __name__ == "__main__":
     # Del include
     elif ARGS.del_include:
         del_include()
+    # db_list
+    elif ARGS.db_list:
+        db_list()
+    # db_purge
+    elif ARGS.db_purge:
+        db_purge(ARGS.db_purge)
     # Sync
     else:
         # Launch pre command

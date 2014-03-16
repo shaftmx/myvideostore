@@ -169,5 +169,20 @@ class Sync_new_files_TestCase(TestCase):
         dir_dest = self.run_cmd('find ./Videos_dest.tests -name "*_cmd" -printf "%P\n"')
         self.assertEquals(sorted(['post_cmd','pre_cmd']), sorted(dir_dest))
 
+    def test_db_purge(self):
+        # First list before db -> empty
+        result = self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests --db-list')
+        self.assertEquals(result,[])
+
+        # Launch one sync and list files
+        self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests')
+        result = self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests --db-list')
+        self.assertTrue(' - bar/s1/1' in result)
+        # Remove db entry bar and list without bar
+        self.run_cmd('echo y | ./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests --db-purge "^bar"')
+        result = self.run_cmd('./myvideostore-sync-new-files.py -s ./Videos.tests -t ./Videos_dest.tests --db-list')
+        self.assertTrue(' - bar/s1/1' not in result and result)
+
+
 if __name__ == '__main__':
     unittest.main()
