@@ -69,6 +69,8 @@ You also can add exclude and include filter.
                           Target directory where you want copy your videos
     --pre pre_cmd         Launch a command before sync directory
     --post post_cmd       Launch a command after sync directory
+    --db-list             List all file already copied in db
+    --db-purge regex      Specify a regex and purge matching entry in db
 
 
 **Example :**
@@ -84,6 +86,14 @@ Sync a directory :
 Launch pre and post command :
 
     myvideostore-sync-new-files.py --source Videos --target myVideos --pre "mount Videos" --post "sync ; umount Videos"
+
+List all file referenced in db (file in db are file copied) :
+
+    myvideostore-sync-new-files.py --source Videos --target myVideos --db-list
+
+Remove file entry in db matching ^foo :
+
+    myvideostore-sync-new-files.py --source Videos --target myVideos --db-purge '^foo'
 
 **Use case** : I have an existing dir with subdir foo and bar. I only want things in bar. The easy way is exclude all and implicy include bar.
 
