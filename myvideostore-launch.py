@@ -191,10 +191,10 @@ class NavCurses(object):
             # -- H
             elif c == key.code_h:
                 self._display_help()
-            # -- RETURN
+            # -- RETURN or DEL
             elif c in [key.code_return, key.code_del]:
                 LOG.critical(type(item))
-                if item.get('type') == 'file':
+                if item is not None and item.get('type') == 'file':
                     # Unmark if marked
                     if item['marked']:
                         with Db(db_name='library', db_file='%s/db.json' % ARGS.directory) as db:
