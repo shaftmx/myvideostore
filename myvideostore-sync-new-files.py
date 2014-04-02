@@ -118,7 +118,11 @@ def sync_dir():
                     if is_include(file_relative) \
                     or not is_exclude(file_relative):
                         create_dir(dir_dest, dry_run=DRY_RUN)
-                        copy_file(file_source, file_dest, dry_run=DRY_RUN)
+                        try:
+                            copy_file(file_source, file_dest, dry_run=DRY_RUN)
+                        except IOError as error:
+                            LOG.critical("Error can't copy file %s : %s"
+                                         % (file_dest, error))
                         if check_file_consistency(file_source, file_dest, dry_run=DRY_RUN):
                             db.save(file_relative, 'unused')
                         else:
