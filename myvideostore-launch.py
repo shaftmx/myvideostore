@@ -221,7 +221,7 @@ class NavCurses(object):
                     with Db(db_name='library', db_file='%s/db.json' % ARGS.directory) as db:
                         # Unmark
                         if db.get(join(current_relativ_dir,item['name'])):
-                            db.remove(join(current_relativ_dir,item['name']))
+                            db.remove(join(current_relativ_dir,item['name'].decode('utf-8')))
                             item['marked'] = False
                         # Mark
                         else:
