@@ -11,6 +11,13 @@ from myvideostore.db import Db
 from itertools import izip_longest
 from os.path import join, dirname
 
+# Force locales to fixe curses and accent display
+# http://www.gossamer-threads.com/lists/python/python/544338?do=post_view_threaded#544338
+import locale
+#locale.setlocale(locale.LC_ALL,"fr_FR.UTF-8")
+locale.setlocale(locale.LC_ALL,"en_US.UTF-8")
+
+
 # Init logging level with debug stream handler
 LOG = logging.getLogger()
 LOG.setLevel(logging.INFO)
@@ -108,6 +115,24 @@ class NavCurses(object):
         # Clear screen
         sub.clear()
 
+    def _display_del_confirm(self, filename):
+        sub_height = self._height - 6
+        sub_width = self._width - 6
+        sub = self._window.subwin( sub_height, sub_width, 6, 8)
+        sub.clear()
+        sub.border(0)
+        # 4, 4 for the corner
+        self._window.addstr( 6, 12, "Really want to delete this file y/N ?")
+        self._window.addstr( 8, 12, "File : %s" % filename)
+        sub.refresh()
+        # Clear screen
+        # y : 121
+        c = sub.getch()
+        sub.clear()
+        if c == 121:
+            return True
+        return False
+
     def _display_menu(self, title, page, active_pos=1):
         # Init window in case of clean
         self._init_window()
@@ -193,8 +218,8 @@ class NavCurses(object):
                 self._display_help()
             # -- RETURN or DEL
             elif c in [key.code_return, key.code_del]:
-                LOG.critical(type(item))
-                if item is not None and item.get('type') == 'file':
+                if item is not None and item.get('type') == 'file' \
+                and self._display_del_confirm(item['name']):
                     # Unmark if marked
                     if item['marked']:
                         with Db(db_name='library', db_file='%s/db.json' % ARGS.directory) as db:
