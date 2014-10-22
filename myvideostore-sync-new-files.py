@@ -99,7 +99,10 @@ def sync_dir():
     "Sync source dir with dest dir"
     LOG.warning('Start sync dir ...')
     # Launch database connection
-    with Db(db_name='sync', db_file='%s/db.json' % ARGS.target, dry_run=DRY_RUN) as db:
+    with Db(db_name='sync',
+            db_file='%s/db.json' % ARGS.target,
+            dry_run=DRY_RUN,
+            safe_dump=True) as db:
         # For each files
         for dir_path, dirs, files in os.walk(ARGS.source):
             if not files: continue
