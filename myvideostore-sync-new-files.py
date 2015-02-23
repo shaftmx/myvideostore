@@ -108,6 +108,10 @@ def sync_dir():
             if not files: continue
             # For each files in dir
             for file_name in files:
+                # Filter db file
+                if (file_name == 'db.json'
+                    or file_name == 'db.json.orig'):
+                    continue
                 # Exemple : -s Video/foo -t dest
                 # Give : src = Video/foo : relative = foo : dst = dest/foo
                 dir_source      = dir_path
