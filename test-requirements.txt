@@ -1,5 +1,4 @@
 mock
 nose
-stubout
-subprocess
 unittest2
+mox
