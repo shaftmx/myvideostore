@@ -1,6 +1,8 @@
 myvideostore
 ============
 
+[![Build Status](https://travis-ci.org/shaftmx/myvideostore.svg)](https://travis-ci.org/shaftmx/myvideostore)
+
 Small cli script with this features :
   * Sync only new video in your server. Allow include et exclude rules.
   * Browse your video directory, tag viewed video and launch vlc
