@@ -6,6 +6,7 @@ import os
 from shutil import copy2 as copy
 from os.path import join
 import hashlib
+from functools import partial
 
 LOG = logging.getLogger(__name__)
 
@@ -53,14 +54,23 @@ def copy_file(source, dest, dry_run=False):
         LOG.info('Copy file : %s' % dest)
         copy(source, dest)
 
+# To optimize speed bug less secure, we can change bufsize to read only 100Mo max
+# For each files
+def md5(filename, chunksize=2**15, bufsize=-1):
+    m = hashlib.md5()
+    with open(filename, 'rb', bufsize) as f:
+        for chunk in iter(partial(f.read, chunksize), b''):
+            m.update(chunk)
+    return m.hexdigest()
+
 def check_file_consistency(source, dest, dry_run=False):
     if dry_run:
          LOG.warning('Check file consistency between %s -> %s' % (source, dest))
          return True
     else:
         LOG.info('Check file consistency between %s -> %s' % (source, dest))
-        sum_source = hashlib.md5(open(source, 'rb').read()).hexdigest()
-        sum_dest = hashlib.md5(open(dest, 'rb').read()).hexdigest()
+        sum_source = md5(filename=source)
+        sum_dest = md5(filename=dest)
         LOG.debug('Sum : %s %s' % (sum_source, sum_dest))
         if sum_source != sum_dest: return False
         else: return True
