@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Author: Gaël Lambert <gael.lambert@netwiki.fr>
+# Author: Gaël Lambert (gaelL) <gael.lambert@netwiki.fr>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
