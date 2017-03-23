@@ -17,17 +17,14 @@ For myvideostore-launch.py
 
     apt-get install vlc
 
+
+
+
 **Setup :**
 
-Just clone the repo :
-
-    git clone https://github.com/shaftmx/myvideostore
-
-And launch setup.py and it's done.
-
-    cd myvideostore && python setyp.py install
-
-For update version you can do a git pull and apply the setup commands
+```
+pip install git+git://github.com/shaftmx/myvideostore
+```
 
 Usage
 ======
