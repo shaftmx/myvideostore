@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Author: Gaël Lambert (gaelL) <gael.lambert@netwiki.fr>
 #
